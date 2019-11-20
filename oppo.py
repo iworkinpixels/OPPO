@@ -2,6 +2,7 @@
 """FM Synth"""
 import argparse
 import sys
+import random 
 
 import numpy as np
 import sounddevice as sd
@@ -81,10 +82,13 @@ parser.add_argument(
 args = parser.parse_args(remaining)
 
 
-oppo1 = Operator(110, 0.01, 0.49, 1.0, 0.5, 1)
-oppo2 = Operator(220, 0.25, 0.25, 1.0, 0.5, 5)
-oppo3 = Operator(440, 0.25, 0.25, 1.0, 0.25, 2)
-oppo4 = Operator(880, 0.15, 0.35, 1.0, 0.25, 5)
+op1 = Operator(440 * random.random(), random.random(), random.random(), random.random(), random.random(), 10 * random.random())
+op2 = Operator(440 * random.random(), random.random(), random.random(), random.random(), random.random(), 10 * random.random())
+print("RATIO: ",op2.f/op1.f)
+print("OP1: ",op1.f,op1.a,op1.d,op1.s,op1.r,op1.k)
+print("OP2: ",op2.f,op2.a,op2.d,op2.s,op2.r,op2.k)
+print("")
+
 
 start_idx = 0
 
@@ -99,7 +103,7 @@ try:
         t = (start_idx + np.arange(frames)) / samplerate
         t = t.reshape(-1, 1)
         
-        outdata[:] = args.amplitude * (np.cos(oppo1.sOsc(t) + oppo2.k * oppo2.sOsc(t)) + np.cos(oppo3.sOsc(t) + oppo4.k * oppo4.sOsc(t)))
+        outdata[:] = args.amplitude * (np.cos(op1.sOsc(t) + op2.k * op2.sOsc(t)))
         start_idx += frames
 
     with sd.OutputStream(device=args.device, channels=1, callback=callback,
