@@ -15,6 +15,21 @@ class Voice:
         self.note_on = 0.0
         self.note_off = 0.0
         self.z = np.vectorize(self.sampleAt)
+        self.op1.dump()
+        self.op2.dump()
+        print("RATIO:", round(self.op2.f/self.op1.f, 2))
+        print("")
+
+    def __init__(self):
+        self.op1 = Operator()
+        self.op2 = Operator()
+        self.note_on = 0.0
+        self.note_off = 0.0
+        self.z = np.vectorize(self.sampleAt)
+        self.op1.dump()
+        self.op2.dump()
+        print("RATIO:", round(self.op2.f/self.op1.f, 2))
+        print("")
 
     def envLength(self):
         return max(self.op1.a,self.op2.a) + max(self.op1.d,self.op2.d) + 0.25 + max(self.op1.r,self.op2.r)
@@ -28,10 +43,12 @@ class Voice:
     def reset(self):
         self.op1.randomize()
         self.op2.randomize()
+        self.op1.dump()
+        self.op2.dump()
         new = self.envLength()
         self.note_on = self.note_on + new
         self.note_off = self.note_on + new
-        print("RATIO:",self.op2.f/self.op1.f)
+        print("RATIO:",round(self.op2.f/self.op1.f, 2))
         print("")
 
 class Operator:
@@ -43,6 +60,15 @@ class Operator:
         self.s = s                              # sustain level (0.0 - 1.0)
         self.r = r                              # release time (in seconds)
         self.k = k                              # level / fm index
+
+    def __init__(self):
+        self.index = 1
+        self.f = 440.00
+        self.a = 0.01
+        self.d = 0.01
+        self.s = 1.00
+        self.r = 0.01
+        self.k = 1.00
 
     def sOsc(self, t, note_on, note_off):
             return self.sAmp(t, note_on, note_off) * np.sin(2 * np.pi * self.f * t)
@@ -69,13 +95,15 @@ class Operator:
         return amp
 
     def randomize(self):
-        self.f = random.random() * 440
-        self.a = random.random() * 2
-        self.d = random.random() * 2
-        self.s = random.random()
-        self.r = random.random() * 2
-        self.k = random.random() * 40
-        print("OP"+str(self.index)+":",self.f, self.a, self.d, self.r, self.k)
+        self.f = round(0.001 + random.random() * 440, 2)
+        self.a = round(0.001 + random.random() * 2, 2)
+        self.d = round(0.001 + random.random() * 2, 2)
+        self.s = round(0.001 + random.random(), 2)
+        self.r = round(0.001 + random.random() * 2, 2)
+        self.k = round(0.001 + random.random() * 40, 2)
+
+    def dump(self):
+        print("OP"+str(self.index)+":",self.f, self.k, '  ['+str(self.a), self.d, self.s, str(self.r)+']')
 
 def int_or_str(text):
     """Helper function for argument parsing."""
@@ -105,27 +133,7 @@ parser.add_argument(
     help='amplitude (default: %(default)s)')
 args = parser.parse_args(remaining)
 
-f1 = 440 * random.random()
-f2 = 440 * random.random()
-k1 = 40 * random.random()
-k2 = 40 * random.random()
-
-a1 = 2 * random.random()
-d1 = 2 * random.random()
-s1 = 2 * random.random()
-r1 = 2 * random.random()
-
-a2 = random.random()
-d2 = random.random()
-s2 = random.random()
-r2 = random.random()
-
-o1 = [f1, a1, d1, s1, r1, k1]
-o2 = [f2, a1, d1, s1, r1, k2]
-
-
-voice1 = Voice(o1, o2)
-
+voice1 = Voice()
 
 start_idx = 0
 try:
