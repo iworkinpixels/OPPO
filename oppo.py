@@ -8,6 +8,32 @@ import numpy as np
 import sounddevice as sd
 import time as pytime 
 
+class Voice:
+    def __init__(self, op1, op2):
+        self.op1 = Operator(0, op1[0], op1[1], op1[2], op1[3], op1[4], op1[5])
+        self.op2 = Operator(1, op2[0], op2[1], op2[2], op2[3], op2[4], op1[5])
+        self.note_on = 0.0
+        self.note_off = 0.0
+        self.z = np.vectorize(self.sampleAt)
+
+    def envLength(self):
+        return max(self.op1.a,self.op2.a) + max(self.op1.d,self.op2.d) + 0.25 + max(self.op1.r,self.op2.r)
+
+    def sampleAt(self, t):
+        s = np.cos(self.op1.sOsc(t, self.note_on, self.note_off) + self.op2.k * self.op2.sOsc(t, self.note_on, self.note_off))
+        if t > self.note_off + self.op1.r + 0.25:
+            self.reset()
+        return s
+
+    def reset(self):
+        self.op1.randomize()
+        self.op2.randomize()
+        new = self.envLength()
+        self.note_on = self.note_on + new
+        self.note_off = self.note_on + new
+        print("RATIO:",self.op2.f/self.op1.f)
+        print("")
+
 class Operator:
     def __init__(self, i, f, a, d, s, r, k):
         self.index = i                          # Index of the current operator
@@ -17,25 +43,15 @@ class Operator:
         self.s = s                              # sustain level (0.0 - 1.0)
         self.r = r                              # release time (in seconds)
         self.k = k                              # level / fm index
-        self.note_on = 0.0                      # time the note off was received
-        self.note_off = 0.0                     # time the note off was received 
-        self.amp = np.vectorize(self.sAmp)
 
-
-    def sOsc(self, t):
-            return self.amp(t) * np.sin(2 * np.pi * self.f * t)
-
-    def noteOn(self, t):
-        self.note_on = t
-
-    def noteOff(self, t):
-        self.note_off = t
+    def sOsc(self, t, note_on, note_off):
+            return self.sAmp(t, note_on, note_off) * np.sin(2 * np.pi * self.f * t)
    
-    def sAmp(self, time):
+    def sAmp(self, time, note_on, note_off):
         amp = 0.0
-        l = time - self.note_on
+        l = time - note_on
 
-        if self.note_on > self.note_off:
+        if note_on > note_off:
             if l < self.a:                                                  # We are in the attack phase
                 amp = (l/self.a)                                            # Raise the amplitude to 1 over the course of the attack time
             
@@ -46,13 +62,20 @@ class Operator:
                 amp = self.d                                                # Maintain the sustain amplitude until the note is released
 
         else:                                                               # Note has been released, so we are in the release phase
-            amp = ((time-self.note_off) / self.r) * (0.0 - self.s) + self.s  # Reduce the amplitude to 0 over the course of the release time
-            if self.index == 0 and time > self.note_off + self.r + 0.25:           # Only do this for Operator 1, which is the carrier
-                reset()
+            amp = ((time-note_off) / self.r) * (0.0 - self.s) + self.s      # Reduce the amplitude to 0 over the course of the release time
 
         if amp < 0.0001:
             amp = 0.0                                                       # Amplitude should not be negative and should not be extremely small
         return amp
+
+    def randomize(self):
+        self.f = random.random() * 440
+        self.a = random.random() * 2
+        self.d = random.random() * 2
+        self.s = random.random()
+        self.r = random.random() * 2
+        self.k = random.random() * 40
+        print("OP"+str(self.index)+":",self.f, self.a, self.d, self.r, self.k)
 
 def int_or_str(text):
     """Helper function for argument parsing."""
@@ -82,35 +105,26 @@ parser.add_argument(
     help='amplitude (default: %(default)s)')
 args = parser.parse_args(remaining)
 
-def reset():
-    op1.note_on += op1.a + op1.d + op1.r + 0.5
-    op2.note_on += op1.a + op1.d + op1.r + 0.5
-    op1.note_off = op1.note_on + op1.a + op1.d + 0.25
-    op2.note_off = op2.note_on + op2.a + op2.d + 0.25
-
 f1 = 440 * random.random()
 f2 = 440 * random.random()
-k1 = 50 * random.random()
-k2 = 50 * random.random()
+k1 = 40 * random.random()
+k2 = 40 * random.random()
 
-a1 = random.random()
-d1 = random.random()
-s1 = random.random()
-r1 = random.random()
+a1 = 2 * random.random()
+d1 = 2 * random.random()
+s1 = 2 * random.random()
+r1 = 2 * random.random()
 
 a2 = random.random()
 d2 = random.random()
 s2 = random.random()
 r2 = random.random()
 
-op1 = Operator(0, f1, a1, d1, s1, r1, k1)
-op2 = Operator(1, f2, a2, d2, s2, r2, k2)
-reset()
+o1 = [f1, a1, d1, s1, r1, k1]
+o2 = [f2, a1, d1, s1, r1, k2]
 
-print("RATIO: ",op2.f/op1.f)
-print("OP1: ",op1.f,op1.a,op1.d,op1.s,op1.r,op1.k)
-print("OP2: ",op2.f,op2.a,op2.d,op2.s,op2.r,op2.k)
-print("")
+
+voice1 = Voice(o1, o2)
 
 
 start_idx = 0
@@ -125,7 +139,7 @@ try:
         t = (start_idx + np.arange(frames)) / samplerate
         t = t.reshape(-1, 1)
         
-        outdata[:] = args.amplitude * (np.cos(op1.sOsc(t) + op2.k * op2.sOsc(t)))
+        outdata[:] = args.amplitude * voice1.z(t)
         start_idx += frames
 
     with sd.OutputStream(device=args.device, channels=1, callback=callback,
