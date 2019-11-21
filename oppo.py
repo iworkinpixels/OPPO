@@ -9,7 +9,8 @@ import sounddevice as sd
 import time as pytime 
 
 class Operator:
-    def __init__(self, f, a, d, s, r, k):
+    def __init__(self, i, f, a, d, s, r, k):
+        self.index = i                          # Index of the current operator
         self.f = f                              # frequency that the operator is running at 
         self.a = a                              # attack time (in seconds)
         self.d = d                              # decay time (in seconds)
@@ -17,8 +18,9 @@ class Operator:
         self.r = r                              # release time (in seconds)
         self.k = k                              # level / fm index
         self.note_on = 0.0                      # time the note off was received
-        self.note_off = 2.5                     # time the note off was received 
+        self.note_off = 0.0                     # time the note off was received 
         self.amp = np.vectorize(self.sAmp)
+
 
     def sOsc(self, t):
             return self.amp(t) * np.sin(2 * np.pi * self.f * t)
@@ -28,10 +30,8 @@ class Operator:
 
     def noteOff(self, t):
         self.note_off = t
-    
+   
     def sAmp(self, time):
-        # print(time,',',self.note_on,',',self.note_off)
-        
         amp = 0.0
         l = time - self.note_on
 
@@ -47,10 +47,11 @@ class Operator:
 
         else:                                                               # Note has been released, so we are in the release phase
             amp = ((time-self.note_off) / self.r) * (0.0 - self.s) + self.s  # Reduce the amplitude to 0 over the course of the release time
+            if self.index == 0 and time > self.note_off + self.r + 0.25:           # Only do this for Operator 1, which is the carrier
+                reset()
 
         if amp < 0.0001:
             amp = 0.0                                                       # Amplitude should not be negative and should not be extremely small
-        # print(amp)
         return amp
 
 def int_or_str(text):
@@ -81,9 +82,31 @@ parser.add_argument(
     help='amplitude (default: %(default)s)')
 args = parser.parse_args(remaining)
 
+def reset():
+    op1.note_on += op1.a + op1.d + op1.r + 0.5
+    op2.note_on += op1.a + op1.d + op1.r + 0.5
+    op1.note_off = op1.note_on + op1.a + op1.d + 0.25
+    op2.note_off = op2.note_on + op2.a + op2.d + 0.25
 
-op1 = Operator(440 * random.random(), random.random(), random.random(), random.random(), random.random(), 10 * random.random())
-op2 = Operator(440 * random.random(), random.random(), random.random(), random.random(), random.random(), 10 * random.random())
+f1 = 440 * random.random()
+f2 = 440 * random.random()
+k1 = 50 * random.random()
+k2 = 50 * random.random()
+
+a1 = random.random()
+d1 = random.random()
+s1 = random.random()
+r1 = random.random()
+
+a2 = random.random()
+d2 = random.random()
+s2 = random.random()
+r2 = random.random()
+
+op1 = Operator(0, f1, a1, d1, s1, r1, k1)
+op2 = Operator(1, f2, a2, d2, s2, r2, k2)
+reset()
+
 print("RATIO: ",op2.f/op1.f)
 print("OP1: ",op1.f,op1.a,op1.d,op1.s,op1.r,op1.k)
 print("OP2: ",op2.f,op2.a,op2.d,op2.s,op2.r,op2.k)
@@ -91,7 +114,6 @@ print("")
 
 
 start_idx = 0
-
 try:
     samplerate = sd.query_devices(args.device, 'output')['default_samplerate']
 
