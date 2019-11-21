@@ -15,27 +15,21 @@ class Voice:
         self.note_on = 0.0
         self.note_off = 0.0
         self.z = np.vectorize(self.sampleAt)
-        self.op1.dump()
-        self.op2.dump()
-        print("RATIO:", round(self.op2.f/self.op1.f, 2))
-        print("")
 
     def __init__(self):
         self.op1 = Operator()
         self.op2 = Operator()
+        self.op1.index = 0
+        self.op2.index = 1
         self.note_on = 0.0
         self.note_off = 0.0
         self.z = np.vectorize(self.sampleAt)
-        self.op1.dump()
-        self.op2.dump()
-        print("RATIO:", round(self.op2.f/self.op1.f, 2))
-        print("")
 
     def envLength(self):
         return max(self.op1.a,self.op2.a) + max(self.op1.d,self.op2.d) + 0.25 + max(self.op1.r,self.op2.r)
 
     def sampleAt(self, t):
-        s = np.cos(self.op1.sOsc(t, self.note_on, self.note_off) + self.op2.k * self.op2.sOsc(t, self.note_on, self.note_off))
+        s = np.sin(self.op1.sOsc(t, self.note_on, self.note_off) + self.op2.k * self.op2.sOsc(t, self.note_on, self.note_off))
         if t > self.note_off + self.op1.r + 0.25:
             self.reset()
         return s
@@ -95,12 +89,12 @@ class Operator:
         return amp
 
     def randomize(self):
-        self.f = round(0.001 + random.random() * 440, 2)
-        self.a = round(0.001 + random.random() * 2, 2)
-        self.d = round(0.001 + random.random() * 2, 2)
-        self.s = round(0.001 + random.random(), 2)
-        self.r = round(0.001 + random.random() * 2, 2)
-        self.k = round(0.001 + random.random() * 40, 2)
+        self.f = round(0.01 + random.random() * 440, 2)
+        self.a = round(0.01 + random.random() * 2, 2)
+        self.d = round(0.01 + random.random() * 2, 2)
+        self.s = round(0.01 + random.random(), 2)
+        self.r = round(0.01 + random.random() * 2, 2)
+        self.k = round(0.01 + random.random() * 40, 2)
 
     def dump(self):
         print("OP"+str(self.index)+":",self.f, self.k, '  ['+str(self.a), self.d, self.s, str(self.r)+']')
