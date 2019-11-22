@@ -37,7 +37,6 @@ class Voice:
     def sampleAt(self, t):
         s = self.op1.sOscFM(t, self.note_on, self.note_off, self.op2.sOsc(t, self.note_on, self.note_off), self.op2.k)
         s += self.op3.sOscFM(t, self.note_on, self.note_off, self.op4.sOsc(t, self.note_on, self.note_off), self.op4.k)
-        # s = self.op1.sOsc(t, self.note_on, self.note_off)
 
         if t > self.note_off + max(self.op1.r,self.op3.r) + 0.25:
             self.reset()
@@ -83,7 +82,7 @@ class Operator:
 
     def sOscFM(self, t, note_on, note_off, msamp, mk):
         # print(t,self.sineIndex(t))
-        index = self.sine[self.sineIndex(t)] + (mk * msamp)
+        index = (2 * np.pi) * self.sine[self.sineIndex(t)] + (mk * msamp)
         index = int(index) % 256
         return self.sAmp(t, note_on, note_off) * self.sine[index]
     
@@ -117,7 +116,7 @@ class Operator:
         self.d = round(0.01 + random.random() * 2, 2)
         self.s = round(0.01 + random.random(), 2)
         self.r = round(0.01 + random.random() * 2, 2)
-        self.k = round(0.01 + random.random() * 500, 2)
+        self.k = round(0.01 + random.random() * 2000, 2)
 
     def dump(self):
         print("OP"+str(self.index)+":","F:"+str(self.f).rjust(7), "  K:"+str(self.k).rjust(6), '  ADSR:['+str(self.a).rjust(4), str(self.d).rjust(4), str(self.s).rjust(4), str(self.r).rjust(4)+']')
