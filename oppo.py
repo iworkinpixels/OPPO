@@ -47,13 +47,16 @@ class Voice:
         self.op2.randomize()
         self.op3.randomize()
         self.op4.randomize()
+        new = self.envLength()
+        self.note_on = self.note_on + new
+        self.note_off = self.note_on + new
+        self.dump()
+
+    def dump(self):
         self.op1.dump()
         self.op2.dump()
         self.op3.dump()
         self.op4.dump()
-        new = self.envLength()
-        self.note_on = self.note_on + new
-        self.note_off = self.note_on + new
         print("RATIOS:",round(self.op2.f/self.op1.f, 2),round(self.op4.f/self.op3.f, 2))
         print("")
 
@@ -71,10 +74,10 @@ class Operator:
     def __init__(self):
         self.index = 1
         self.f = 440.00
-        self.a = 0.01
-        self.d = 0.01
+        self.a = 0.1
+        self.d = 0.1
         self.s = 1.00
-        self.r = 0.01
+        self.r = 0.1
         self.k = 1.00
 
     def sineIndex(self, t):
@@ -112,14 +115,14 @@ class Operator:
 
     def randomize(self):
         self.f = round(0.01 + random.random() * 440, 2)
-        self.a = round(0.01 + random.random() * 2, 2)
+        self.a = round(0.1 + random.random() * 2, 2)
         self.d = round(0.01 + random.random() * 2, 2)
         self.s = round(0.01 + random.random(), 2)
-        self.r = round(0.01 + random.random() * 2, 2)
+        self.r = round(0.1 + random.random() * 2, 2)
         self.k = round(0.01 + random.random() * 2000, 2)
 
     def dump(self):
-        print("OP"+str(self.index)+":","F:"+str(self.f).rjust(7), "  K:"+str(self.k).rjust(6), '  ADSR:['+str(self.a).rjust(4), str(self.d).rjust(4), str(self.s).rjust(4), str(self.r).rjust(4)+']')
+        print("OP"+str(self.index)+":","F:"+str(self.f).rjust(7), "  K:"+str(self.k).rjust(8), '  ADSR:['+str(self.a).rjust(4), str(self.d).rjust(4), str(self.s).rjust(4), str(self.r).rjust(4)+']')
 
 def int_or_str(text):
     """Helper function for argument parsing."""
