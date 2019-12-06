@@ -10,14 +10,15 @@ tau = 2 * np.pi
 
 f=1
 
-def dumppos(sinpos, sinval, exppos, expval, significand, exponent):
-    print('SPOS:',"{:03d}".format(sinpos))
-    print('SVAL:',"{:04d}".format(sinval),format(sinval,'016b'))
-    print('EPOS:',"{:04d}".format(exppos),format(exppos,'08b'))
-    print('EVAL:',"{:04d}".format(expval),format(expval,'016b'))
-    print('SIGV:',"{:04d}".format(significand),format(significand,'016b'))
-    print('EXPV:',"{:04d}".format(exponent),format(exponent,'08b'))
-    print('ACTL:',math.exp(-sinval))
+def dump_output(sinpos, sinval, exppos, expval, significand, exponent,outstr):
+    print('SPOS:',"{:03d}".format(sinpos))                                  # sine table position
+    print('SVAL:',"{:04d}".format(sinval),format(sinval,'016b'))            # sine table value
+    print('EPOS:',"{:04d}".format(exppos),format(exppos,'08b'))             # exp table position
+    print('EVAL:',"{:04d}".format(expval),format(expval,'016b'))            # exp table value
+    print('SIGV:',"{:04d}".format(significand),format(significand,'010b'))  # significand value
+    print('EXPV:',"{:04d}".format(exponent),format(exponent,'03b'))         # exponent value
+    print('ACTL:',math.exp(-sinval))                                        # The actual value we want (calculated using math.exp(-sinval))
+    print('EXPT:',outstr)                                                   # A string representing the binary we are currently outputting. Hoping to use it to see what I'm doing wrong.
     print('')
 
 
@@ -66,7 +67,8 @@ for sinpos in range(0,len(sine)):
     significand = 1024 + expval
     exponent = math.floor(expval%256)
     output = (significand / pow(2,exponent))/1024
-    dumppos(sinpos, sinval, exppos, expval, significand, exponent)
+    outstr = format(significand,'010b')+' '+format(exponent,'03b')
+    dump_output(sinpos, sinval, exppos, expval, significand, exponent, outstr)
     out.append(output)
     print('OUTP:',output)
     print('\n')
