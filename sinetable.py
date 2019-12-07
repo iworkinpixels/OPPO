@@ -45,7 +45,7 @@ for x in range(tl):
     sine.append(value)
 
 for x in range(tl):
-    value = int(round((pow(2, x/tl)-1)*1024))
+    value = round((pow(2, x/256)-1)*1024)
     exp.append(value)
 
 print('\n-LOGSIN:')
@@ -58,6 +58,7 @@ for x in range(0,len(exp)):
     print("{:03d}".format(x), "{:04d}".format(exp[x]), format(exp[x],'016b'))
 
 print("")
+print(exp)
 
 # Now prove that we can reconstruct a quarter sine wave.
 for sinpos in range(0,len(sine)):
@@ -65,12 +66,13 @@ for sinpos in range(0,len(sine)):
     exppos = sinval & 0xFF # read the table at the position defined by the 8 LSB of the input
     expval = exp[exppos]
     significand = 1024 + expval
-    exponent = math.floor(expval%256)
-    output = (significand / pow(2,exponent))/1024
-    outstr = format(significand,'010b')+' '+format(exponent,'03b')
-    dump_output(sinpos, sinval, exppos, expval, significand, exponent, outstr)
+    exponent = expval>>8
+    output = (exp[sinval&0xFF]+1024) >> (sinval>>8)
+    print("{:03d}".format(sinpos), "{:04d}".format(significand), "{:02d}".format(exponent), "{:06d}".format(output))
+    # outstr = format(significand,'010b')+' '+format(exponent,'03b')
+    # dump_output(sinpos, sinval, exppos, expval, significand, exponent, outstr)
     out.append(output)
-    print('OUTP:',output)
-    print('\n')
+    # print('OUTP:',output)
+    # print('\n')
 
 print(out)
