@@ -25,23 +25,17 @@ def sineIndex(f, t):
     if phase < np.pi / 2:
         sinval = sinelut[i]
         output = (explut[255-(sinval&0xFF)]+1024) >> (sinval>>8) # this is correct
-        output = output/2048
-        return output
-    if phase < np.pi :
+    elif phase < np.pi :
         sinval = sinelut[~i]
         output = (explut[255-(sinval&0xFF)]+1024) >> (sinval>>8) # this is not yet correct
-        output = output/2048
-        return output
-    if phase < 3 * np.pi / 2 :
+    elif phase < 3 * np.pi / 2 :
         sinval = sinelut[i]
         output = -((explut[255-(sinval&0xFF)]+1024) >> (sinval>>8)) # this is correct
-        output=output/2048
-        return output
-    if phase < tau:
+    elif phase < tau:
         sinval = sinelut[~i]
         output = -((explut[(255-sinval&0xFF)]+1024) >> (sinval>>8)) # this is not yet correct
-        output=output/2048
-        return output
+    output=output/2048
+    return output
 
 si = np.vectorize(sineIndex)
 
