@@ -6,9 +6,9 @@ from scipy.io import wavfile
 
 sampleRate = 44100
 frequency = 110
-phase = -0.1 # to make this match up with the np.sin() based sine wave we are using for testing.
+phase = -0.14 # to make this match up with the np.sin() based sine wave we are using for testing.
 phase_d = 0.0
-length = 5
+length = 50
 tableLength = 256
 tau = 2 * np.pi
 
