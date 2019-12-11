@@ -17,7 +17,7 @@ for x in range(tl):
     sine.append(value)
 
 for x in range(tl):
-    value = round((pow(2, x/256)-1)*1024)
+    value = round((pow(2, x/tl)-1)*1024)
     exp.append(value)
 
 print('sine=', sine)

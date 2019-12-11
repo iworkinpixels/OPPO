@@ -29,7 +29,7 @@ def incrementPhase():
     global tau
     phase = (phase + phase_d) % tau
 
-def sineIndex(samples):
+def sineValues(samples):
     global sinelut
     global explut
     global tableLength
@@ -40,28 +40,28 @@ def sineIndex(samples):
 
     incrementPhase()
 
-    i = phase * tableLength / tau
-    i = int(i * 4) % tableLength
+    sineIndex = phase * tableLength / tau
+    sineIndex = int(sineIndex * 4) % tableLength
 
     if phase < np.pi / 2:
-        sinval = sinelut[i]
+        sinval = sinelut[sineIndex]
         output = (explut[255-(sinval&0xFF)]+1024) >> (sinval>>8)
     elif phase < np.pi :
-        sinval = sinelut[~i]
+        sinval = sinelut[~sineIndex]
         output = (explut[255-(sinval&0xFF)]+1024) >> (sinval>>8)
     elif phase < 3 * np.pi / 2 :
-        sinval = sinelut[i]
+        sinval = sinelut[sineIndex]
         output = -((explut[255-(sinval&0xFF)]+1024) >> (sinval>>8))
     elif phase < tau:
-        sinval = sinelut[~i]
+        sinval = sinelut[~sineIndex]
         output = -((explut[(255-sinval&0xFF)]+1024) >> (sinval>>8))
     output = output/2048
     return output
 
 setf(440.0)
-si = np.vectorize(sineIndex)
+sv = np.vectorize(sineValues)
 
 samples = np.linspace(0, length, sampleRate * length)  #  Produces a 5 second Audio-File
-y = si(samples)
+y = sv(samples)
 
 wavfile.write('TableSine.wav', sampleRate, y)
