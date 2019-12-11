@@ -20,9 +20,14 @@ def setf(f):
     global frequency
     global phase_d
     global sampleRate
-
     frequency = f
     phase_d = (np.pi/2 * f) / sampleRate
+
+def incrementPhase():
+    global phase
+    global phase_d
+    global tau
+    phase = (phase + phase_d) % tau
 
 def sineIndex(samples):
     global sinelut
@@ -33,12 +38,10 @@ def sineIndex(samples):
     global phase_d
     global sampleRate
 
-    phase = (phase + phase_d) % tau
-    output = 0.0
+    incrementPhase()
 
     i = phase * tableLength / tau
     i = int(i * 4) % tableLength
-    print(phase, i)
 
     if phase < np.pi / 2:
         sinval = sinelut[i]
@@ -61,4 +64,4 @@ si = np.vectorize(sineIndex)
 samples = np.linspace(0, length, sampleRate * length)  #  Produces a 5 second Audio-File
 y = si(samples)
 
-wavfile.write('Sine.wav', sampleRate, y)
+wavfile.write('TableSine.wav', sampleRate, y)
