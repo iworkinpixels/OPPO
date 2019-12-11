@@ -6,7 +6,7 @@ from scipy.io import wavfile
 
 sampleRate = 44100
 frequency = 110
-phase = 0.0
+phase = -0.1 # to make this match up with the np.sin() based sine wave we are using for testing.
 phase_d = 0.0
 length = 5
 tableLength = 256
@@ -21,7 +21,7 @@ def setf(f):
     global phase_d
     global sampleRate
     frequency = f
-    phase_d = (np.pi/2 * f) / sampleRate
+    phase_d = (tau * f) / sampleRate
 
 def incrementPhase():
     global phase
@@ -37,7 +37,9 @@ def sineValues(samples):
     global phase
     global phase_d
     global sampleRate
+    global frequency
 
+    # return np.sin(tau * frequency * samples)
     incrementPhase()
 
     sineIndex = phase * tableLength / tau
