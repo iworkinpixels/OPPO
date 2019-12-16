@@ -121,11 +121,11 @@ class Operator:
     def sOsc(self, t, note_on, note_off):
         return self.sAmp(t, note_on, note_off) * self.sineIndex(t)
 
-    def sAmp(self, time, note_on, note_off):
+    def sAmp(self, time):
         amp = 0.0
-        l = time - note_on
+        l = time - self.note_on
 
-        if note_on > note_off:
+        if note_on > self.note_off:
             if l < self.a:                                                  # We are in the attack phase
                 amp = (l/self.a)                                            # Raise the amplitude to 1 over the course of the attack time
             
@@ -136,7 +136,7 @@ class Operator:
                 amp = self.d                                                # Maintain the sustain amplitude until the note is released
 
         else:                                                               # Note has been released, so we are in the release phase
-            amp = ((time-note_off) / self.r) * (0.0 - self.s) + self.s      # Reduce the amplitude to 0 over the course of the release time
+            amp = ((time-self.note_off) / self.r) * (0.0 - self.s) + self.s      # Reduce the amplitude to 0 over the course of the release time
 
         if amp < 0.0001:
             amp = 0.0                                                       # Amplitude should not be negative and should not be extremely small
